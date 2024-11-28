@@ -32,8 +32,7 @@ This is a **Role-Based Access Control (RBAC)** Dashboard application built with 
 
 ![image](https://github.com/user-attachments/assets/e6e69f69-e49f-4a74-bce6-dd2fcf5ffc5f)
 
-![Uploading image.png…]()
-
+![image](https://github.com/user-attachments/assets/9c726175-c686-40b1-8752-789ec1975194)
   
 ## Installation
 
