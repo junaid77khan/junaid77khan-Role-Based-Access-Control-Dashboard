@@ -51,9 +51,9 @@ To set up the backend (API server), follow these steps:
    ```
    
 2. Install dependencies:
-  ```bash
-  npm install
-  ```
+    ```bash
+    npm install
+    ```
 
 3. Set up environment variables:
 
@@ -80,9 +80,9 @@ To set up the frotend, follow these steps:
    ```
    
 2. Install dependencies:
-  ```bash
-  npm install
-  ```
+    ```bash
+    npm install
+    ```
 
 3. Set up environment variables:
 
