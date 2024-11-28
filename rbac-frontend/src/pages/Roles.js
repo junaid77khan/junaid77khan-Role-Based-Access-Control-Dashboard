@@ -13,6 +13,8 @@ const Roles = () => {
     });
     const [editing, setEditing] = useState(false);
     const [currentRole, setCurrentRole] = useState(null);
+    const [isPopupVisible, setIsPopupVisible] = useState(false);
+    const [roleIdToDelete, setRoleIdToDelete] = useState(null);
 
     const token = localStorage.getItem('token');
 
@@ -86,17 +88,26 @@ const Roles = () => {
         setCurrentRole(role);
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this role?')) {
-            try {
-                await axios.delete(`${process.env.REACT_APP_API_URL}/api/roles/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                fetchRoles();
-            } catch (err) {
-                setError('Failed to delete role');
-            }
+    const handleDelete = (id) => {
+        setRoleIdToDelete(id);
+        setIsPopupVisible(true);
+    };
+
+    const confirmDelete = async () => {
+        setIsPopupVisible(false);
+        try {
+            await axios.delete(`${process.env.REACT_APP_API_URL}/api/roles/${roleIdToDelete}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            fetchRoles();
+        } catch (err) {
+            setError('Failed to delete role');
         }
+    };
+
+    const cancelDelete = () => {
+        setIsPopupVisible(false);
+        setRoleIdToDelete(null);
     };
 
     return (
@@ -172,16 +183,16 @@ const Roles = () => {
                                     <tr key={role._id} className="border-b border-gray-200">
                                         <td className="px-4 py-3">{role.name}</td>
                                         <td className="px-4 py-3">{role.permissions.map(p => p.name).join(', ')}</td>
-                                        <td className="px-4 py-3">
+                                        <td className="border px-4 py-2 flex items-center justify-center space-x-2">
                                             <button 
                                                 onClick={() => handleEdit(role)} 
-                                                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition duration-200 mr-2"
+                                                className="bg-yellow-500 text-white py-1 px-2 rounded-md hover:bg-yellow-600 focus:outline-none"
                                             >
                                                 Edit
                                             </button>
                                             <button 
                                                 onClick={() => handleDelete(role._id)} 
-                                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition duration-200"
+                                                className="bg-red-500 text-white py-1 px-2 rounded-md hover:bg-red-600 focus:outline-none"
                                             >
                                                 Delete
                                             </button>
@@ -193,6 +204,31 @@ const Roles = () => {
                     </div>
                 </div>
             </div>
+
+            {isPopupVisible && (
+                <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-white rounded-lg p-6 shadow-lg w-full max-w-sm sm:max-w-md md:max-w-lg">
+                        <p className="text-gray-700 text-lg mb-4">
+                            Are you sure you want to delete this role? Deleting this role will also delete all associated users.
+                        </p>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                onClick={cancelDelete}
+                                className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            >
+                                OK
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };

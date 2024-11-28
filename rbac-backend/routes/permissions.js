@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-
+const Role = require('../models/Role.js');
 const Permission = require('../models/Permission');
 
 router.get('/', auth(['Admin']), async (req, res) => {
@@ -73,12 +73,19 @@ router.delete('/:id', auth(['Admin']), async (req, res) => {
         let permission = await Permission.findById(req.params.id);
         if (!permission) return res.status(404).json({ message: 'Permission not found' });
 
+        await Role.updateMany(
+            { permissions: req.params.id },
+            { $pull: { permissions: req.params.id } }
+        );
+
         await Permission.findByIdAndDelete(req.params.id);
-        res.json({ message: 'Permission removed' });
+
+        res.json({ message: 'Permission removed from roles and deleted' });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
     }
 });
+
 
 module.exports = router;

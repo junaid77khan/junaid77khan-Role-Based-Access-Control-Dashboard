@@ -2,9 +2,10 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-
+const logActivity = require('../middleware/activityLogger'); 
 const Role = require('../models/Role');
 const Permission = require('../models/Permission');
+const User = require('../models/Users.js')
 
 
 router.get('/', auth(['Admin']), async (req, res) => {
@@ -76,12 +77,24 @@ router.delete('/:id', auth(['Admin']), async (req, res) => {
         let role = await Role.findById(req.params.id);
         if (!role) return res.status(404).json({ message: 'Role not found' });
 
+
+        const users = await User.find({ role: req.params.id });
+      
+        if (users.length > 0) {
+            for (const user of users) {
+                await User.findByIdAndDelete(user._id);
+                await logActivity('User Deleted', user.email, role.name, null);
+            }
+        }
+
         await Role.findByIdAndDelete(req.params.id);
-        res.json({ message: 'Role removed' });
+
+        res.json({ message: 'Role and associated users removed' });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
     }
 });
+
 
 module.exports = router;

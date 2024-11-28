@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
@@ -10,6 +9,8 @@ const Permissions = () => {
     const [form, setForm] = useState({ name: '', description: '' });
     const [editing, setEditing] = useState(false);
     const [currentPermission, setCurrentPermission] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const [permissionToDelete, setPermissionToDelete] = useState(null);
     const token = localStorage.getItem('token');
 
     useEffect(() => {
@@ -56,23 +57,32 @@ const Permissions = () => {
         setCurrentPermission(permission);
     };
 
-    const handleDelete = async id => {
-        if (window.confirm('Are you sure you want to delete this permission?')) {
-            try {
-                await axios.delete(`${process.env.REACT_APP_API_URL}/api/permissions/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                fetchPermissions();
-            } catch (err) {
-                setError('Failed to delete permission');
-            }
+    const handleDelete = async () => {
+        try {
+            await axios.delete(`${process.env.REACT_APP_API_URL}/api/permissions/${permissionToDelete._id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            fetchPermissions();
+            setShowModal(false); // Close the modal after deletion
+        } catch (err) {
+            setError('Failed to delete permission');
         }
+    };
+
+    const openModal = permission => {
+        setPermissionToDelete(permission);
+        setShowModal(true);
+    };
+
+    const closeModal = () => {
+        setShowModal(false);
+        setPermissionToDelete(null);
     };
 
     return (
         <div className="flex flex-col md:flex-row">
             <Sidebar />
-            <div className="flex-1 p-6">
+            <div className="flex-1 ">
                 <Navbar />
                 <div className="bg-white shadow-md rounded-lg p-6 mb-6">
                     <h2 className="text-2xl font-semibold mb-4">Permissions</h2>
@@ -144,7 +154,7 @@ const Permissions = () => {
                                             Edit
                                         </button>
                                         <button 
-                                            onClick={() => handleDelete(permission._id)} 
+                                            onClick={() => openModal(permission)} 
                                             className="bg-red-500 text-white py-1 px-2 rounded-md hover:bg-red-600 focus:outline-none"
                                         >
                                             Delete
@@ -156,6 +166,31 @@ const Permissions = () => {
                     </table>
                 </div>
             </div>
+
+            {showModal && (
+                <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-white rounded-lg p-6 shadow-lg w-full max-w-sm sm:max-w-md md:max-w-lg">
+                        <p className="text-gray-700 text-lg mb-4">
+                            Deleting this permission will also remove it from the corresponding roles. Are you sure you want to delete it?
+                        </p>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                onClick={closeModal}
+                                className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };
