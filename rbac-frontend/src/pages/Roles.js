@@ -15,6 +15,7 @@ const Roles = () => {
     const [currentRole, setCurrentRole] = useState(null);
     const [isPopupVisible, setIsPopupVisible] = useState(false);
     const [roleIdToDelete, setRoleIdToDelete] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const token = localStorage.getItem('token');
 
@@ -24,6 +25,7 @@ const Roles = () => {
     }, []);
 
     const fetchRoles = async () => {
+        setLoading(true);
         try {
             const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/roles`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -32,9 +34,11 @@ const Roles = () => {
         } catch (err) {
             setError('Failed to fetch roles');
         }
+        setLoading(false);
     };
 
     const fetchPermissions = async () => {
+        setLoading(true);
         try {
             const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/permissions`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -43,6 +47,7 @@ const Roles = () => {
         } catch (err) {
             setError('Failed to fetch permissions');
         }
+        setLoading(false);
     };
 
     const handleChange = e => {
@@ -60,6 +65,7 @@ const Roles = () => {
 
     const handleSubmit = async e => {
         e.preventDefault();
+        setLoading(true);
         try {
             if (editing) {
                 await axios.put(`${process.env.REACT_APP_API_URL}/api/roles/${currentRole._id}`, form, {
@@ -77,6 +83,7 @@ const Roles = () => {
         } catch (err) {
             setError(err.response.data.message || 'Operation failed');
         }
+        setLoading(false);
     };
 
     const handleEdit = (role) => {
@@ -95,6 +102,7 @@ const Roles = () => {
 
     const confirmDelete = async () => {
         setIsPopupVisible(false);
+        setLoading(true);
         try {
             await axios.delete(`${process.env.REACT_APP_API_URL}/api/roles/${roleIdToDelete}`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -103,6 +111,7 @@ const Roles = () => {
         } catch (err) {
             setError('Failed to delete role');
         }
+        setLoading(false);
     };
 
     const cancelDelete = () => {
@@ -169,39 +178,45 @@ const Roles = () => {
                             </div>
                         </form>
                     </div>
-                    <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
-                        <table className="min-w-full table-auto">
-                            <thead>
-                                <tr className="bg-indigo-600 text-white">
-                                    <th className="px-4 py-3 text-left">Role Name</th>
-                                    <th className="px-4 py-3 text-left">Permissions</th>
-                                    <th className="px-4 py-3 text-left">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {roles.map(role => (
-                                    <tr key={role._id} className="border-b border-gray-200">
-                                        <td className="px-4 py-3">{role.name}</td>
-                                        <td className="px-4 py-3">{role.permissions.map(p => p.name).join(', ')}</td>
-                                        <td className="border px-4 py-2 flex items-center justify-center space-x-2">
-                                            <button 
-                                                onClick={() => handleEdit(role)} 
-                                                className="bg-yellow-500 text-white py-1 px-2 rounded-md hover:bg-yellow-600 focus:outline-none"
-                                            >
-                                                Edit
-                                            </button>
-                                            <button 
-                                                onClick={() => handleDelete(role._id)} 
-                                                className="bg-red-500 text-white py-1 px-2 rounded-md hover:bg-red-600 focus:outline-none"
-                                            >
-                                                Delete
-                                            </button>
-                                        </td>
+                    {loading ? (
+                        <div className="flex justify-center items-center py-8">
+                                <div className="w-8 h-8 border-2 border-t-4 border-green-500 border-solid rounded-full animate-spin"></div>
+                            </div>
+                    ) : (
+                        <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
+                            <table className="min-w-full table-auto">
+                                <thead>
+                                    <tr className="bg-indigo-600 text-white">
+                                        <th className="px-4 py-3 text-left">Role Name</th>
+                                        <th className="px-4 py-3 text-left">Permissions</th>
+                                        <th className="px-4 py-3 text-left">Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {roles.map(role => (
+                                        <tr key={role._id} className="border-b border-gray-200">
+                                            <td className="px-4 py-3">{role.name}</td>
+                                            <td className="px-4 py-3">{role.permissions.map(p => p.name).join(', ')}</td>
+                                            <td className="border px-4 py-2 flex items-center justify-center space-x-2">
+                                                <button 
+                                                    onClick={() => handleEdit(role)} 
+                                                    className="text-blue-600 hover:text-blue-500"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDelete(role._id)} 
+                                                    className="text-red-600 hover:text-red-500"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -222,13 +237,12 @@ const Roles = () => {
                                 onClick={confirmDelete}
                                 className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
                             >
-                                OK
+                                Confirm
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-
         </div>
     );
 };

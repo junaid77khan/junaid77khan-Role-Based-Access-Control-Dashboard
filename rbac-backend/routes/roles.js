@@ -10,13 +10,14 @@ const User = require('../models/Users.js')
 
 router.get('/', auth(['Admin']), async (req, res) => {
     try {
-        const roles = await Role.find().populate('permissions');
+        const roles = await Role.find({ name: { $ne: 'Admin' } }).populate('permissions');
         res.json(roles);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
     }
 });
+
 
 router.post('/', auth(['Admin']), async (req, res) => {
     const { name, permissions } = req.body;
@@ -43,7 +44,9 @@ router.post('/', auth(['Admin']), async (req, res) => {
 
 router.get('/count', auth(['Admin']), async (req, res) => {
     try {
-        const totalRoles = await Role.countDocuments();
+        let totalRoles = await Role.countDocuments();
+        totalRoles = totalRoles-1;
+        // Excluding Admin role
         res.json({ totalRoles });
     } catch (err) {
         console.error(err.message);

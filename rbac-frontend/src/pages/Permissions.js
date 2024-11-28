@@ -3,6 +3,10 @@ import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import axios from 'axios';
 
+const Loader = () => (
+    <div className="w-6 h-6 border-4 border-t-4 border-green-500 border-solid rounded-full animate-spin"></div>
+);
+
 const Permissions = () => {
     const [permissions, setPermissions] = useState([]);
     const [error, setError] = useState('');
@@ -11,6 +15,7 @@ const Permissions = () => {
     const [currentPermission, setCurrentPermission] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [permissionToDelete, setPermissionToDelete] = useState(null);
+    const [loading, setLoading] = useState(false);
     const token = localStorage.getItem('token');
 
     useEffect(() => {
@@ -18,6 +23,7 @@ const Permissions = () => {
     }, []);
 
     const fetchPermissions = async () => {
+        setLoading(true);
         try {
             const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/permissions`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -25,6 +31,8 @@ const Permissions = () => {
             setPermissions(res.data);
         } catch (err) {
             setError('Failed to fetch permissions');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -32,6 +40,7 @@ const Permissions = () => {
 
     const handleSubmit = async e => {
         e.preventDefault();
+        setLoading(true);
         try {
             if (editing) {
                 await axios.put(`${process.env.REACT_APP_API_URL}/api/permissions/${currentPermission._id}`, form, {
@@ -48,6 +57,8 @@ const Permissions = () => {
             fetchPermissions();
         } catch (err) {
             setError(err.response.data.message || 'Operation failed');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -58,14 +69,17 @@ const Permissions = () => {
     };
 
     const handleDelete = async () => {
+        setLoading(true);
         try {
             await axios.delete(`${process.env.REACT_APP_API_URL}/api/permissions/${permissionToDelete._id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchPermissions();
-            setShowModal(false); // Close the modal after deletion
+            setShowModal(false);
         } catch (err) {
             setError('Failed to delete permission');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -87,7 +101,6 @@ const Permissions = () => {
                 <div className="bg-white shadow-md rounded-lg p-6 mb-6">
                     <h2 className="text-2xl font-semibold mb-4">Permissions</h2>
                     {error && <p className="text-red-500 mb-4">{error}</p>}
-
                     <div className="mb-6">
                         <h3 className="text-xl font-semibold mb-2">{editing ? 'Edit Permission' : 'Add Permission'}</h3>
                         <form onSubmit={handleSubmit} className="space-y-4">
@@ -133,37 +146,43 @@ const Permissions = () => {
                 </div>
 
                 <div className="bg-white shadow-md rounded-lg p-6">
-                    <table className="min-w-full table-auto">
-                        <thead className="bg-indigo-600 text-white">
-                            <tr>
-                                <th className="px-4 py-2 font-medium ">Name</th>
-                                <th className="px-4 py-2 font-medium ">Description</th>
-                                <th className="px-4 py-2 font-medium">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {permissions.map(permission => (
-                                <tr key={permission._id} className="hover:bg-gray-50">
-                                    <td className="border px-4 py-2">{permission.name}</td>
-                                    <td className="border px-4 py-2">{permission.description}</td>
-                                    <td className="border px-4 py-2 flex items-center justify-center space-x-2">
-                                        <button 
-                                            onClick={() => handleEdit(permission)} 
-                                            className="bg-yellow-500 text-white py-1 px-2 rounded-md hover:bg-yellow-600 focus:outline-none"
-                                        >
-                                            Edit
-                                        </button>
-                                        <button 
-                                            onClick={() => openModal(permission)} 
-                                            className="bg-red-500 text-white py-1 px-2 rounded-md hover:bg-red-600 focus:outline-none"
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
+                    {loading ? (
+                        <div className="flex justify-center items-center py-8">
+                                <div className="w-8 h-8 border-2 border-t-4 border-green-500 border-solid rounded-full animate-spin"></div>
+                            </div>
+                    ) : (
+                        <table className="min-w-full table-auto">
+                            <thead className="bg-indigo-600 text-white">
+                                <tr>
+                                    <th className="px-4 py-2 font-medium ">Name</th>
+                                    <th className="px-4 py-2 font-medium ">Description</th>
+                                    <th className="px-4 py-2 font-medium">Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {permissions.map(permission => (
+                                    <tr key={permission._id} className="hover:bg-gray-50">
+                                        <td className="border px-4 py-2">{permission.name}</td>
+                                        <td className="border px-4 py-2">{permission.description}</td>
+                                        <td className="border px-4 py-2 flex items-center justify-center space-x-2">
+                                            <button 
+                                                onClick={() => handleEdit(permission)} 
+                                                className="text-blue-600 hover:text-blue-500"
+                                            >
+                                                Edit
+                                            </button>
+                                            <button 
+                                                onClick={() => openModal(permission)} 
+                                                className="text-red-600 hover:text-red-500"
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
             </div>
 

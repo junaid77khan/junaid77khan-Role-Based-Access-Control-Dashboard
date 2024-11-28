@@ -17,6 +17,7 @@ const Users = () => {
     const [editing, setEditing] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [operationLoading, setOperationLoading] = useState(false);
 
     const token = localStorage.getItem('token');
     const API_URL = process.env.REACT_APP_API_URL;
@@ -54,6 +55,7 @@ const Users = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setOperationLoading(true);
         try {
             if (editing) {
                 await axios.put(`${API_URL}/api/users/${currentUser._id}`, form, {
@@ -70,6 +72,8 @@ const Users = () => {
             fetchUsers();
         } catch (err) {
             setError(err.response.data.message || 'Operation failed');
+        } finally {
+            setOperationLoading(false);
         }
     };
 
@@ -87,6 +91,7 @@ const Users = () => {
 
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this user?')) {
+            setOperationLoading(true);
             try {
                 await axios.delete(`${API_URL}/api/users/${id}`, {
                     headers: { Authorization: `Bearer ${token}` },
@@ -94,6 +99,8 @@ const Users = () => {
                 fetchUsers();
             } catch (err) {
                 setError('Failed to delete user');
+            } finally {
+                setOperationLoading(false);
             }
         }
     };
@@ -195,9 +202,9 @@ const Users = () => {
                         </form>
                     </div>
                     <div className="overflow-auto">
-                        {loading ? (
+                        {loading || operationLoading ? (
                             <div className="flex justify-center items-center py-8">
-                                <div className="w-8 h-8 border-2 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
+                                <div className="w-8 h-8 border-2 border-t-4 border-green-500 border-solid rounded-full animate-spin"></div>
                             </div>
                         ) : (
                             <table className="w-full table-auto bg-white shadow rounded-lg overflow-hidden">
@@ -220,13 +227,13 @@ const Users = () => {
                                             <td className="border px-4 py-3 flex items-center gap-2">
                                                 <button
                                                     onClick={() => handleEdit(user)}
-                                                    className="bg-yellow-500 hover:bg-yellow-400 text-white px-4 py-2 rounded-lg"
+                                                    className="text-blue-600 hover:text-blue-500"
                                                 >
                                                     Edit
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(user._id)}
-                                                    className="bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded-lg"
+                                                    className="text-red-600 hover:text-red-500"
                                                 >
                                                     Delete
                                                 </button>
