@@ -1,4 +1,3 @@
-
 const express = require('express');
 const connectDB = require('./config/db');
 const cors = require('cors');
@@ -8,9 +7,15 @@ dotenv.config();
 
 const app = express();
 
+const corsOptions = {
+  origin: ['https://junaid77khan-role-based-access-control-dashboard.vercel.app', "http://localhost:3000"],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+  credentials: true, 
+};
+
 connectDB();
 
-app.use(cors());
+app.use(cors(corsOptions)); 
 app.use(express.json());
 
 app.use('/api/auth', require('./routes/auth.js'));
