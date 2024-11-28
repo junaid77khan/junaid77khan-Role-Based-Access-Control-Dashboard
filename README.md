@@ -38,7 +38,7 @@ This is a **Role-Based Access Control (RBAC)** Dashboard application built with 
 
 Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/junaid77khan/junaid77khan-Role-Based-Access-Control-Dashboard.git
    ```
 
 ### Backend Setup
