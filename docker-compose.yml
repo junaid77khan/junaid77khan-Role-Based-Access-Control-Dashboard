@@ -1,0 +1,16 @@
+services:
+  frontend:
+    image: junaid777khan/role-based-access-control
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./rbac-frontend/.env
+    depends_on:
+      - backend
+
+  backend:
+    image: junaid777khan/role-based-access-control-backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./rbac-backend/.env

@@ -7,7 +7,9 @@ const auth = require('../middleware/auth');
 
 router.get('/recent', auth(['Admin']), async (req, res) => {
     try {
-        const activities = await Activity.find().sort({ createdAt: -1 }).limit(5); // Fetch 5 most recent activities
+        const activities = await Activity.find().sort({ createdAt: -1 }).limit(10); 
+        console.log(activities);
+        
         res.json(activities);
     } catch (err) {
         console.error(err.message);

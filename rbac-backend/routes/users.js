@@ -51,9 +51,9 @@ router.post('/', auth(['Admin']), async (req, res) => {
 
         role = await Role.findById(role);
         role = role.name;
-        await logActivity('User Created', email, role, null);  
+        const response = await logActivity('User Created', email, role, null); 
 
-        res.json(user);
+        res.json({user});
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
@@ -94,8 +94,8 @@ router.delete('/:id', auth(['Admin']), async (req, res) => {
 
         role=role.name
 
-        await logActivity('User Deleted', user.email, role, null);  
-
+        const res = await logActivity('User Deleted', user.email, role, null); 
+        
         res.json({ message: 'User removed' });
     } catch (err) {
         console.error(err.message);
